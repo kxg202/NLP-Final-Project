@@ -1,5 +1,6 @@
 ## Methods to preprocess the data go here.
 import pandas as pd
+import json
 from sklearn.model_selection import train_test_split
 from io import StringIO
 
@@ -37,14 +38,41 @@ def preprocessCSV(filepath, test_size=0.2, random_state=None):
 
     return x_train, x_test, y_train, y_test
 
-def preprocessJSON(filepath):
-    f = open("datasets" + filepath)
+def preprocessJSON(filepath, test_size=0.2, random_state=None):
+    # Initialize lists to store features and labels
+    X = []  # Features
+    y = []  # Labels
+
+    # Read the JSONL file
+    with open(filepath, 'r') as f:
+        for line in f:
+            # Parse JSON from the line
+            data = json.loads(line)
+
+            # Extract human and ChatGPT answers
+            human_answer = data.get("human_answers", [])
+            chatgpt_answer = data.get("chatgpt_answers", [])
+
+            # Add human answer to features with label 0 (human-written)
+            if human_answer:
+                X.append(human_answer)
+                y.append(0)
+                
+            # Add ChatGPT answer to features with label 1 (AI-written)   
+            if chatgpt_answer:
+                X.append(chatgpt_answer)
+                y.append(1)
+
+    # Split the data into training and testing sets
+    x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+
     return x_train, x_test, y_train, y_test
 
 def preprocess(filepath, test_size=0.2, random_state=None):
     file_extension = filepath.split(".")[-1]
     extensionMap = {
         "json": preprocessJSON,
+        "jsonl": preprocessJSON,
         "csv": preprocessCSV
     }
     if file_extension in extensionMap:
