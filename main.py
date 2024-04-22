@@ -4,6 +4,7 @@ from system import *
 from evaluate import *
 
 x_train, x_test, y_train, y_test = preprocess("./datasets/reddit_filtered_dataset.csv")
-print(x_train)
+#x_train, x_test, y_train, y_test = preprocess("./datasets/reddit_eli5.jsonl")
+print(x_train[0])
 #train()
 #evaluate()
