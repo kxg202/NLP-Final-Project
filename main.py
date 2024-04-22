@@ -3,6 +3,7 @@ from preprocess import *
 from system import *
 from evaluate import *
 
-preprocess()
-train()
-evaluate()
+x_train, x_test, y_train, y_test = preprocess("./datasets/reddit_filtered_dataset.csv")
+print(x_train)
+#train()
+#evaluate()

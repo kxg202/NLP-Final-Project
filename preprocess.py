@@ -15,13 +15,15 @@ def preprocessCSV(filepath, test_size=0.2, random_state=None):
     for line in lines:
         # Split the line by comma
         parts = line.strip().split(',')
-
-        # Extract the text and label from the parts
-        text = ','.join(parts[:-1])  # Joining in case the text contains commas
-        label = int(parts[-1])
-
-        # Append the text and label to the data list
-        data.append((text, label))
+        try:
+            # Extract the text and label from the parts
+            text = ','.join(parts[:-1])  # Joining in case the text contains commas
+            label = int(parts[-1])
+            # Append the text and label to the data list
+            data.append((text, label))
+        except ValueError:
+            # Skip the row if ValueError occurs
+            continue
 
     # Convert the list of tuples to a DataFrame
     df = pd.DataFrame(data, columns=['text', 'label'])
@@ -39,14 +41,14 @@ def preprocessJSON(filepath):
     f = open("datasets" + filepath)
     return x_train, x_test, y_train, y_test
 
-def preprocess(filepath):
+def preprocess(filepath, test_size=0.2, random_state=None):
     file_extension = filepath.split(".")[-1]
     extensionMap = {
         "json": preprocessJSON,
         "csv": preprocessCSV
     }
     if file_extension in extensionMap:
-        return extensionMap[file_extension](filepath)
+        return extensionMap[file_extension](filepath, test_size=test_size, random_state=random_state)
     else:
         print("Unsupported file extension:", file_extension)
     
