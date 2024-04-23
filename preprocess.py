@@ -1,6 +1,7 @@
 ## Methods to preprocess the data go here.
 import pandas as pd
 import json
+import re
 from sklearn.model_selection import train_test_split
 from io import StringIO
 
@@ -38,45 +39,28 @@ def preprocessCSV(filepath, test_size=0.2, random_state=None):
 
     return x_train, x_test, y_train, y_test
 
-def preprocessJSON(filepath, test_size=0.2, random_state=None):
-    # Initialize lists to store features and labels
-    X = []  # Features
-    y = []  # Labels
+def filterAndConvertToCSV(input_filepath, output_filepath):
+    data = []
+    with open(input_filepath, 'r') as file:
+        for line in file:
+            json_data = json.loads(line)
+            # Extract human answer if available
+            human_answers = json_data.get("human_answers", [])
+            if human_answers:
+                human_answer = human_answers[0].replace("\n", "")
+                human_answer = human_answers[0].replace(" '", "'")
+                human_answer = re.sub(r"\b(do|does|did|wo|ca|sha|would|could|should|must|might|may|is|are|was|were) n't\b", r"\1n't", human_answer)
+                if human_answer.startswith('> '):
+                    human_answer = human_answer[2:]  # Remove the first two characters ('> ')
+                data.append({"Data": human_answer, "Labels": 0})
+            # Extract AI answer if available
+            ai_answers = json_data.get("chatgpt_answers", [])
+            if ai_answers:
+                ai_answer = ai_answers[0].replace("\n", "")
+                ai_answer = ai_answers[0].replace(" '", "'")
+                ai_answer = re.sub(r"\b(do|does|did|wo|ca|sha|would|could|should|must|might|may|is|are|was|were) n't\b", r"\1n't", ai_answer)
+                data.append({"Data": ai_answer, "Labels": 1})
 
-    # Read the JSONL file
-    with open(filepath, 'r') as f:
-        for line in f:
-            # Parse JSON from the line
-            data = json.loads(line)
-
-            # Extract human and ChatGPT answers
-            human_answer = data.get("human_answers", [])
-            chatgpt_answer = data.get("chatgpt_answers", [])
-
-            # Add human answer to features with label 0 (human-written)
-            if human_answer:
-                X.append(human_answer)
-                y.append(0)
-                
-            # Add ChatGPT answer to features with label 1 (AI-written)   
-            if chatgpt_answer:
-                X.append(chatgpt_answer)
-                y.append(1)
-
-    # Split the data into training and testing sets
-    x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
-
-    return x_train, x_test, y_train, y_test
-
-def preprocess(filepath, test_size=0.2, random_state=None):
-    file_extension = filepath.split(".")[-1]
-    extensionMap = {
-        "json": preprocessJSON,
-        "jsonl": preprocessJSON,
-        "csv": preprocessCSV
-    }
-    if file_extension in extensionMap:
-        return extensionMap[file_extension](filepath, test_size=test_size, random_state=random_state)
-    else:
-        print("Unsupported file extension:", file_extension)
-    
+    # Convert the filtered data to a DataFrame and save to CSV
+    df = pd.DataFrame(data)
+    df.to_csv(output_filepath, index=False)
