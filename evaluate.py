@@ -4,12 +4,6 @@ from sklearn.metrics import confusion_matrix
 
 ## Methods for evaluating the system output go here
 
-def getAccuracy(y_pred):
-    return y-pred
-
-
-
-
 ## accuracy
 def true_positive(df):
   return len(df[(df['pred'] == 1 ) & (df['gt'] == 1)].index)
