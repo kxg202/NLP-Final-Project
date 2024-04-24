@@ -7,7 +7,7 @@ from io import StringIO
 
 def preprocessCSV(filepath, test_size=0.2, random_state=None):
     # Read the CSV file into a pandas DataFrame
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding="utf-8") as f:
         lines = f.readlines()
 
     # Initialize lists to store features and labels
