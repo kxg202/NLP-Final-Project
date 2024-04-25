@@ -47,20 +47,23 @@ def filterAndConvertToCSV(input_filepath, output_filepath):
             # Extract human answer if available
             human_answers = json_data.get("human_answers", [])
             if human_answers:
-                human_answer = human_answers[0].replace("\n", "")
-                human_answer = human_answers[0].replace(" '", "'")
-                human_answer = re.sub(r"\b(do|does|did|wo|ca|sha|would|could|should|must|might|may|is|are|was|were) n't\b", r"\1n't", human_answer)
+                human_answer = human_answers[0]
                 if human_answer.startswith('> '):
                     human_answer = human_answer[2:]  # Remove the first two characters ('> ')
                 data.append({"Data": human_answer, "Labels": 0})
             # Extract AI answer if available
             ai_answers = json_data.get("chatgpt_answers", [])
             if ai_answers:
-                ai_answer = ai_answers[0].replace("\n", "")
-                ai_answer = ai_answers[0].replace(" '", "'")
-                ai_answer = re.sub(r"\b(do|does|did|wo|ca|sha|would|could|should|must|might|may|is|are|was|were) n't\b", r"\1n't", ai_answer)
+                ai_answer = ai_answers[0]
                 data.append({"Data": ai_answer, "Labels": 1})
 
     # Convert the filtered data to a DataFrame and save to CSV
     df = pd.DataFrame(data)
+    df['Data'] = df['Data'].str.replace(r'\n\n', '')
+    df['Data'] = df['Data'].str.replace(r'\n', '')
+    df['Data'] = df['Data'].str.replace(r'u/', '')
+    pattern = r'\[([^]]*)\]\([^)]*\)'
+    df['Data'] = df['Data'].apply(lambda x: re.sub(pattern, r'\1', x))
+    df['Data'] = df['Data'].apply(lambda x: re.sub(r'http\S+', '', x))
+    df['Data'] = df['Data'].apply(lambda x: re.sub(r'\*{2,}', '*', re.sub(r'\*(.*?)\*', r'\1', x)))
     df.to_csv(output_filepath, index=False)

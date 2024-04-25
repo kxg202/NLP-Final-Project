@@ -2,8 +2,8 @@
 from preprocess import *
 from system import *
 
-x_train, x_test, y_train, y_test = preprocessCSV("./datasets/reddit_filtered_dataset.csv")
-#x_train, x_test, y_train, y_test = preprocessCSV("./datasets/reddit_eli5_filtered.csv")
+#x_train, x_test, y_train, y_test = preprocessCSV("./datasets/reddit_filtered_dataset.csv")
+x_train, x_test, y_train, y_test = preprocessCSV("./datasets/reddit_eli5_filtered.csv")
 #filterAndConvertToCSV("./datasets/reddit_eli5.jsonl", "./datasets/reddit_eli5_filtered.csv")
 y_pred, accuracy, precision, recall, f1 = train_and_predict(x_train, x_test, y_train, y_test)
 print(f"Accuracy: {accuracy}")
